@@ -1,4 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
+import { runAccessibilityScan } from '../utils/accessibilityScan';
+import { runPrivacyScan } from '../utils/privacyScan';
+import { prisma } from '../lib/prisma';
 
 export const scanWebsite = async (
   req: Request,
@@ -9,14 +12,40 @@ export const scanWebsite = async (
     const { url } = req.body;
     if (!url) return res.status(400).json({ error: 'URL is required' });
 
-    // For MVP, mock data:
+    const [accessibility, privacy] = await Promise.all([
+      runAccessibilityScan(url),
+      runPrivacyScan(url),
+    ]);
+
     const result = {
       url,
-      privacy: { trackers: 17, cookies: 0, grade: 'C' },
-      accessibility: { issues: 8, critical: 3, grade: 'D' },
+      accessibility,
+      privacy,
     };
 
-    res.status(200).json(result);
+    const site = await prisma.site.upsert({
+      where: { url },
+      update: {},
+      create: { url },
+    });
+
+    await prisma.scan.create({
+      data: {
+        siteId: site.id,
+        privacyTrackers: privacy.trackers,
+        thirdPartyCookies: privacy.thirdPartyCookies,
+        privacyGrade: privacy.grade,
+        accessibilityIssues: accessibility.issues.length,
+        accessibilityCritical: accessibility.critical,
+        accessibilityGrade: accessibility.grade,
+        https: privacy.https,
+      },
+    });
+
+    return res.status(200).json({
+      message: 'Scan completed successfully',
+      result,
+    });
   } catch (err) {
     next(err);
   }

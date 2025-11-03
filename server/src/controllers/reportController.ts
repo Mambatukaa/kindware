@@ -1,4 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
+import { prisma } from '../lib/prisma';
 // import { Scan } from "../models/scan"; // later when DB is connected
 
 export const getReportByUrl = async (
@@ -12,19 +13,36 @@ export const getReportByUrl = async (
       return res.status(400).json({ error: 'URL parameter is required' });
     }
 
-    // Step 1: fetch from DB (for now we’ll mock it)
-    // const latestScan = await Scan.findOne({ where: { url }, order: [["createdAt", "DESC"]] });
+    const site = await prisma.site.findUnique({
+      where: { url },
+    });
 
-    // Step 2: mock data for now
-    const mockData = {
+    if (!site) {
+      return res.status(404).json({ error: 'Site not found' });
+    }
+
+    const scan = await prisma.scan.findFirst({
+      where: { siteId: site.id },
+    });
+
+    if (!scan) {
+      return res.status(404).json({ error: 'Scan not found' });
+    }
+
+    res.status(200).json({
       url,
-      privacy: { trackers: 17, cookies: 0, grade: 'C' },
-      accessibility: { issues: 8, critical: 3, grade: 'D' },
-      scannedAt: '2025-11-03T10:00:00Z',
-    };
-
-    // Step 3: respond
-    res.status(200).json(mockData);
+      privacy: {
+        trackers: scan.privacyTrackers,
+        cookies: scan.thirdPartyCookies,
+        grade: scan.privacyGrade,
+      },
+      accessibility: {
+        issues: scan.accessibilityIssues,
+        critical: scan.accessibilityCritical,
+        grade: scan.accessibilityGrade,
+      },
+      scannedAt: scan.createdAt,
+    });
   } catch (error) {
     next(error);
   }
