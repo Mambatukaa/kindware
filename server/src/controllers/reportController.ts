@@ -2,13 +2,14 @@ import { Request, Response, NextFunction } from 'express';
 import { prisma } from '../lib/prisma';
 // import { Scan } from "../models/scan"; // later when DB is connected
 
-export const getReportByUrl = async (
+export const getReport = async (
   req: Request,
   res: Response,
   next: NextFunction,
 ) => {
   try {
-    const { url } = req.params;
+    const url = req.query.url as string;
+
     if (!url) {
       return res.status(400).json({ error: 'URL parameter is required' });
     }

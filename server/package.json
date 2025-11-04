@@ -18,15 +18,21 @@
   "dependencies": {
     "@axe-core/puppeteer": "^4.11.0",
     "@prisma/client": "^6.18.0",
+    "bcrypt": "^6.0.0",
+    "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
     "express": "^5.1.0",
+    "jsonwebtoken": "^9.0.2",
     "node-fetch": "^3.3.2",
     "prisma": "^6.18.0",
     "puppeteer": "^24.28.0"
   },
   "devDependencies": {
+    "@types/bcrypt": "^6.0.0",
+    "@types/cookie-parser": "^1.4.10",
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.5",
+    "@types/jsonwebtoken": "^9.0.10",
     "@types/node": "^24.10.0",
     "add": "^2.0.6",
     "dotenv": "^17.2.3",

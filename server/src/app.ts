@@ -1,19 +1,29 @@
 import express from 'express';
-import scanRoutes from './routes/scanRoutes';
 import { errorHandler } from './middlewares/errorHandler';
 import cors from 'cors';
-import reportRoutes from './routes/reportRoutes';
+import cookieParser from 'cookie-parser';
 import healthRoutes from './routes/healthRoutes';
+import authRoutes from './routes/authRoutes';
+import secureRoutes from './routes/secureRoutes';
 
 const app = express();
 
-app.use(cors());
 app.use(express.json());
+app.use(cookieParser());
 
-// Routes
+app.use(
+  cors({
+    origin: true,
+    credentials: true, // allow cookies
+  }),
+);
+
 app.use('/api', healthRoutes);
-app.use('/api', scanRoutes);
-app.use('/api', reportRoutes);
+// public Routes
+app.use('/api', authRoutes);
+
+// secure Routes
+app.use('/api', secureRoutes);
 
 // Global error handler (should be after routes)
 app.use(errorHandler);

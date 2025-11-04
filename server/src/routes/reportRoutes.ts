@@ -1,8 +1,8 @@
 import express from 'express';
-import { getReportByUrl } from '../controllers/reportController';
+import { getReport } from '../controllers/reportController';
 
 const router = express.Router();
 
-router.get('/report/:url', getReportByUrl);
+router.get('/report', getReport);
 
 export default router;
